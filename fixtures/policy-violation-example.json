@@ -1,0 +1,40 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_policy_violation_7007",
+  "verdict": "BLOCK",
+  "confidence": 0.99,
+  "risk_level": "HIGH",
+  "evidence_result": {
+    "evidence_score": 0.8,
+    "verified_count": 1,
+    "missing_references": []
+  },
+  "policy_result": {
+    "passed": false,
+    "violations": [
+      {
+        "policy_id": "pol_max_refund_cap",
+        "rule_id": "rule_cap_25k",
+        "message": "Requested refund amount ₹40,000 exceeds maximum automated refund cap of ₹25,000."
+      }
+    ]
+  },
+  "consistency_result": {
+    "is_consistent": true,
+    "contradictions": []
+  },
+  "ai_result": {
+    "verdict_recommendation": "APPROVE",
+    "reasoning_summary": "LLM evaluated customer chat and deemed complaint legitimate.",
+    "detected_risk_factors": ["High monetary value"],
+    "confidence": 0.85
+  },
+  "reasons": [
+    "Hard deterministic policy violation: Amount ₹40,000 exceeds ₹25,000 cap.",
+    "Deterministic policy engine veto overrides LLM recommendation."
+  ],
+  "missing_evidence": [],
+  "verification_started_at": "2026-08-29T19:35:00.000Z",
+  "verification_completed_at": "2026-08-29T19:35:00.250Z",
+  "verifier_version": "trustledger.engine.v0.1"
+}

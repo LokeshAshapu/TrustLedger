@@ -1,0 +1,9 @@
+{
+  "decision_id": "dec_sample_safe_001",
+  "scenario_class": "CLASS_A",
+  "difficulty": "EASY",
+  "ground_truth_verdict": "SAFE",
+  "expected_verdict": "APPROVE",
+  "expected_safe_action": true,
+  "financial_exposure_minor": 0
+}

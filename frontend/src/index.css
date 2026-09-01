@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@400;500;600;650;700;800&display=swap');
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    margin: 0;
+    min-height: 100%;
+    width: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+    background: #07090C;
+    color: #F5F7FA;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+/* Theme Tokens for Tailwind v4 */
+@theme {
+  --color-background-primary: #07090C;
+  --color-background-secondary: #0C1015;
+  --color-background-surface: #0C1015;
+  --color-background-elevated: #11161D;
+  --color-background-hover: #151A21;
+
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.13);
+  --color-border-accent: #4F8CFF;
+
+  --color-text-primary: #F5F7FA;
+  --color-text-secondary: #A3ACB8;
+  --color-text-muted: #68717D;
+  --color-text-disabled: #454C55;
+
+  --color-verdict-approve: #36D98A;
+  --color-verdict-review: #E5B85C;
+  --color-verdict-block: #FF5864;
+
+  --color-accent-blue: #4F8CFF;
+  --color-accent-ai: #8B7CFF;
+  --color-accent-infra: #4F8CFF;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', Consolas, monospace;
+
+  --radius-card: 14px;
+  --radius-control: 8px;
+}
+
+/* Institutional Surface Utility */
+.fintech-surface {
+  background: #0C1015;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+}
+
+.fintech-elevated {
+  background: #11161D;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+}
+
+/* Primary Brand CTA Button (#4F8CFF) */
+.brand-cta {
+  background: #4F8CFF;
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 14px;
+  height: 52px;
+  border-radius: 8px;
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.brand-cta:hover {
+  background: #6A9FFF;
+  transform: translateY(-1px);
+}
+
+.brand-cta:active {
+  transform: translateY(0);
+}
+
+/* Form Input Field Base */
+.field-input {
+  background: #07090C;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  height: 48px;
+  color: #F5F7FA;
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+  font-size: 14px;
+  transition: border-color 0.15s ease;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: #4F8CFF;
+}
+
+/* Technical Monospace */
+.font-technical {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', Consolas, monospace;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #07090C;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}

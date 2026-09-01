@@ -1,0 +1,23 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_safe_001",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_01",
+  "merchant_id": "merch_001",
+  "customer_id": "cust_00120",
+  "transaction_id": "txn_001200",
+  "order_id": "ord_001200",
+  "amount": {
+    "amount_minor": 149900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "NON_DELIVERY",
+    "explanation": "Courier status confirms shipment lost in transit."
+  },
+  "evidence_references": [
+    "ev_000101",
+    "ev_000102"
+  ],
+  "requested_at": "2026-08-29T19:00:00Z"
+}

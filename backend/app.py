@@ -1,0 +1,322 @@
+"""
+TrustLedger Master REST API Server
+Phase 11B.2, 11B.3, 11C.2, 11C.7 — Amount Normalization & Explainable Decision API
+API Version: trustledger.api.v1
+"""
+
+import os
+import logging
+from typing import Dict, Any, Optional
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+
+from decision_gate.models import DecisionResult
+from execution_engine.models import ExecutionAuthorization, ExecutionResult
+from execution.errors import (
+    RazorpayClientError,
+    RazorpayConfigurationError,
+    RazorpayAuthenticationError,
+    RazorpayNotFoundError,
+    RazorpayValidationError,
+)
+from backend.orchestrator import TrustLedgerDecisionService
+from backend.repository import SyntheticDataRepository
+from backend.normalizer import normalize_request, RequestNormalizationError
+
+logger = logging.getLogger("trustledger.api")
+
+app = FastAPI(
+    title="TrustLedger Financial AI Firewall REST API",
+    description="Authoritative End-to-End Decision & Verification API for Financial AI Agents",
+    version="1.0.0",
+)
+
+# Enable CORS with configurable origin restrictions for production hardening
+cors_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "*")
+allow_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Global Orchestration Service Singleton
+repository = SyntheticDataRepository()
+decision_service = TrustLedgerDecisionService(data_repository=repository)
+
+
+class DecisionResponse(BaseModel):
+    decision_result: DecisionResult
+    authorization: Optional[ExecutionAuthorization] = None
+
+
+class ExecuteRefundApiRequest(BaseModel):
+    authorization_id: str = Field(min_length=1, description="Valid ExecutionAuthorization ID issued by Decision Gate")
+    payment_id: str = Field(min_length=1, description="Razorpay payment ID to execute refund against")
+    idempotency_key: Optional[str] = Field(default=None, description="Optional idempotency key for safe retry")
+
+
+@app.get("/health")
+def health_check():
+    """
+    Health check endpoint exposing system & component status.
+    Distinguishes configured AI provider and API key presence.
+    """
+    provider_type = os.getenv("AI_PROVIDER", "mock").lower()
+    has_api_key = bool(os.getenv("NVIDIA_API_KEY") or os.getenv("OPENAI_API_KEY"))
+
+    ai_provider_status = {
+        "configured_provider": provider_type,
+        "model_id": os.getenv("AI_MODEL", "meta/llama-3.1-70b-instruct"),
+        "key_status": "configured" if has_api_key else ("mock_mode" if provider_type == "mock" else "missing_key"),
+        "status": "available" if (provider_type == "mock" or has_api_key) else "degraded_fallback_to_review",
+    }
+
+    return {
+        "status": "healthy",
+        "service": "trustledger-orchestration-api",
+        "contract_version": "trustledger.contract.v1",
+        "components": {
+            "deterministic_engine": "available",
+            "risk_engine": "available",
+            "ai_verifier": ai_provider_status,
+            "decision_gate": "available",
+            "execution_gateway": "available",
+            "razorpay_client": decision_service.execution_gateway.razorpay_client.health_check(),
+            "synthetic_world_repository": f"available ({len(repository.transactions_db)} transactions loaded)",
+        },
+    }
+
+
+@app.get("/health/razorpay")
+def razorpay_health_check():
+    """
+    GET /health/razorpay
+    Explicit Razorpay Test Mode health/preflight check.
+    Returns safe metadata. Never exposes API key secrets or Authorization headers.
+    """
+    rzp_client = decision_service.execution_gateway.razorpay_client
+    check = rzp_client.health_check()
+    return {
+        "configured": check.get("configured", False),
+        "environment": check.get("environment", "test"),
+        "base_url": check.get("base_url", "https://api.razorpay.com"),
+        "credentials_present": check.get("key_status") == "configured",
+        "details": check,
+    }
+
+
+@app.get("/api/v1/payments/{payment_id}")
+def get_razorpay_payment(payment_id: str):
+    """
+    GET /api/v1/payments/{payment_id}
+    Non-mutating read-only payment inspection from Razorpay Test Mode.
+    Returns normalized safe payment metadata. Never exposes sensitive credentials.
+    """
+    pid = (payment_id or "").strip()
+    if not pid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "INVALID_PAYMENT_ID", "message": "payment_id parameter is required."},
+        )
+
+    rzp_client = decision_service.execution_gateway.razorpay_client
+    local_txn = repository.transactions_db.get(pid)
+
+    try:
+        raw_pay = rzp_client.fetch_payment(pid)
+        amount_minor = raw_pay.get("amount", 0)
+        return {
+            "payment_id": raw_pay.get("id", pid),
+            "amount_minor": amount_minor,
+            "amount_rupees": round(amount_minor / 100.0, 2),
+            "currency": raw_pay.get("currency", "INR"),
+            "status": str(raw_pay.get("status", "unknown")).upper(),
+            "captured": bool(raw_pay.get("captured", False)) or raw_pay.get("status") == "captured",
+            "method": str(raw_pay.get("method", "CARD")).upper(),
+            "created_at": raw_pay.get("created_at"),
+            "email": raw_pay.get("email"),
+            "contact": raw_pay.get("contact"),
+            "source": "RAZORPAY_TEST_MODE",
+        }
+    except (RazorpayNotFoundError, RazorpayClientError, RazorpayValidationError):
+        if local_txn:
+            amount_minor = local_txn.get("amount", {}).get("amount_minor", 0)
+            return {
+                "payment_id": local_txn.get("transaction_id"),
+                "amount_minor": amount_minor,
+                "amount_rupees": round(amount_minor / 100.0, 2),
+                "currency": local_txn.get("amount", {}).get("currency", "INR"),
+                "status": str(local_txn.get("status", "CAPTURED")).upper(),
+                "captured": local_txn.get("status") == "CAPTURED",
+                "method": str(local_txn.get("payment_method", "CARD")).upper(),
+                "created_at": local_txn.get("created_at"),
+                "source": "HELD-OUT BENCHMARK",
+            }
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "error": "PAYMENT_NOT_FOUND",
+                "message": f"Payment ID '{pid}' was not found on Razorpay Test API or local benchmark database.",
+            },
+        )
+    except RazorpayAuthenticationError as ae:
+        if local_txn:
+            amount_minor = local_txn.get("amount", {}).get("amount_minor", 0)
+            return {
+                "payment_id": local_txn.get("transaction_id"),
+                "amount_minor": amount_minor,
+                "amount_rupees": round(amount_minor / 100.0, 2),
+                "currency": local_txn.get("amount", {}).get("currency", "INR"),
+                "status": str(local_txn.get("status", "CAPTURED")).upper(),
+                "captured": local_txn.get("status") == "CAPTURED",
+                "method": str(local_txn.get("payment_method", "CARD")).upper(),
+                "created_at": local_txn.get("created_at"),
+                "source": "HELD-OUT BENCHMARK",
+            }
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "RAZORPAY_AUTH_ERROR", "message": str(ae)},
+        )
+    except RazorpayConfigurationError as ce:
+        if local_txn:
+            amount_minor = local_txn.get("amount", {}).get("amount_minor", 0)
+            return {
+                "payment_id": local_txn.get("transaction_id"),
+                "amount_minor": amount_minor,
+                "amount_rupees": round(amount_minor / 100.0, 2),
+                "currency": local_txn.get("amount", {}).get("currency", "INR"),
+                "status": str(local_txn.get("status", "CAPTURED")).upper(),
+                "captured": local_txn.get("status") == "CAPTURED",
+                "method": str(local_txn.get("payment_method", "CARD")).upper(),
+                "created_at": local_txn.get("created_at"),
+                "source": "HELD-OUT BENCHMARK",
+            }
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"error": "RAZORPAY_CONFIG_ERROR", "message": str(ce)},
+        )
+    except Exception as ex:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={"error": "RAZORPAY_FETCH_ERROR", "message": str(ex)},
+        )
+
+
+@app.post("/api/v1/decisions/verify", response_model=DecisionResponse)
+def verify_decision(request: Dict[str, Any]):
+    """
+    POST /api/v1/decisions/verify
+
+    Ingests a DecisionRequest payload and returns an authoritative DecisionResult.
+
+    Accepts two formats for 'amount':
+    - Simple integer: "amount": 1500  (treated as INR rupees → 150000 paise internally)
+    - Structured Money: "amount": {"amount_minor": 150000, "currency": "INR"}
+
+    All other required fields (agent_id, merchant_id, reason, evidence_references, requested_at)
+    are optional at the API boundary — safe defaults are applied by the normalizer.
+    The canonical Decision Engine always runs in full.
+    """
+    if not isinstance(request, dict):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "INVALID_PAYLOAD",
+                "message": "Request body must be a valid JSON object.",
+            },
+        )
+
+    # --- PHASE 1: Normalize public API request → canonical internal format (ONCE, at the boundary) ---
+    try:
+        canonical_request = normalize_request(request)
+        logger.info(
+            f"Normalized request decision_id='{canonical_request.get('decision_id')}' "
+            f"amount={canonical_request.get('amount')} action={canonical_request.get('action_type')}"
+        )
+    except RequestNormalizationError as rne:
+        logger.warning(f"Request normalization failed: {rne}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "INVALID_REQUEST",
+                "field": rne.field,
+                "message": rne.message,
+            },
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "INVALID_REQUEST",
+                "message": str(ve),
+            },
+        )
+
+    # --- PHASE 2: Run full TrustLedger orchestration pipeline ---
+    try:
+        decision_result, authorization = decision_service.verify_decision(canonical_request)
+        logger.info(
+            f"Decision completed decision_id='{decision_result.decision_id}' "
+            f"verdict={decision_result.verdict.value} rule={decision_result.decision_rule}"
+        )
+        return DecisionResponse(
+            decision_result=decision_result,
+            authorization=authorization,
+        )
+    except ValueError as ve:
+        logger.warning(f"Pipeline ValueError for request: {ve}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={
+                "error": "BAD_REQUEST",
+                "message": str(ve),
+            },
+        )
+    except Exception as e:
+        logger.error(f"Orchestration failure: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "error": "ORCHESTRATION_FAILURE",
+                "message": str(e),
+            },
+        )
+
+
+@app.post("/api/v1/decisions/{decision_id}/execute", response_model=ExecutionResult)
+def execute_refund(decision_id: str, req: ExecuteRefundApiRequest):
+    """
+    POST /api/v1/decisions/{decision_id}/execute
+    Executes an authorized refund via RazorpayTestClient.
+    Authoritative DecisionResult is retrieved strictly from server-side state.
+    Frontend CANNOT pass a verdict to force execution.
+    """
+    if not decision_id or not decision_id.strip():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="INVALID_DECISION_ID: Decision ID path parameter is required.",
+        )
+
+    try:
+        exec_result = decision_service.execute_decision(
+            decision_id=decision_id,
+            authorization_id=req.authorization_id,
+            payment_id=req.payment_id,
+            idempotency_key=req.idempotency_key,
+        )
+        return exec_result
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"EXECUTION_DENIED: {str(ve)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"EXECUTION_FAILURE: {str(e)}",
+        )

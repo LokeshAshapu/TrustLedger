@@ -1,0 +1,37 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_ambiguous_8008",
+  "verdict": "REVIEW",
+  "confidence": 0.55,
+  "risk_level": "MEDIUM",
+  "evidence_result": {
+    "evidence_score": 0.4,
+    "verified_count": 1,
+    "missing_references": ["ev_delivery_proof_99"]
+  },
+  "policy_result": {
+    "passed": true,
+    "violations": []
+  },
+  "consistency_result": {
+    "is_consistent": false,
+    "contradictions": [
+      "Customer claims non-delivery, but courier API status is IN_TRANSIT."
+    ]
+  },
+  "ai_result": {
+    "verdict_recommendation": "REVIEW",
+    "reasoning_summary": "Unclear whether item is lost or still in transit. Delivery proof missing.",
+    "detected_risk_factors": ["Incomplete evidence", "Status contradiction"],
+    "confidence": 0.55
+  },
+  "reasons": [
+    "Evidence score 0.4 is below automated approval threshold (0.8).",
+    "Missing required delivery proof artifact.",
+    "Contradiction between chat claim and courier status."
+  ],
+  "missing_evidence": ["ev_delivery_proof_99"],
+  "verification_started_at": "2026-08-29T19:36:00.000Z",
+  "verification_completed_at": "2026-08-29T19:36:00.310Z",
+  "verifier_version": "trustledger.engine.v0.1"
+}

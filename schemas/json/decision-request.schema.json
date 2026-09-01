@@ -1,0 +1,129 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://trustledger.io/schemas/v1/decision-request.schema.json",
+  "title": "DecisionRequest",
+  "description": "Canonical Decision Request payload submitted by an AI Agent to TrustLedger.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "decision_id",
+    "action_type",
+    "agent_id",
+    "merchant_id",
+    "amount",
+    "reason",
+    "evidence_references",
+    "requested_at"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "trustledger.contract.v1"
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "action_type": {
+      "type": "string",
+      "enum": ["REFUND", "DISCOUNT", "PAYMENT_RECOVERY", "PAYOUT"]
+    },
+    "agent_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "merchant_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "customer_id": {
+      "type": ["string", "null"]
+    },
+    "transaction_id": {
+      "type": ["string", "null"]
+    },
+    "order_id": {
+      "type": ["string", "null"]
+    },
+    "amount": {
+      "type": "object",
+      "required": ["amount_minor", "currency"],
+      "properties": {
+        "amount_minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "discount_spec": {
+      "type": ["object", "null"],
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "FIXED_AMOUNT" },
+            "value": {
+              "type": "object",
+              "required": ["amount_minor", "currency"],
+              "properties": {
+                "amount_minor": { "type": "integer", "minimum": 0 },
+                "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+              }
+            }
+          },
+          "required": ["type", "value"]
+        },
+        {
+          "properties": {
+            "type": { "const": "PERCENTAGE" },
+            "percentage_points": { "type": "number", "minimum": 0.01, "maximum": 100.0 }
+          },
+          "required": ["type", "percentage_points"]
+        }
+      ]
+    },
+    "reason": {
+      "type": "object",
+      "required": ["category"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": [
+            "DUPLICATE_PAYMENT",
+            "CUSTOMER_REQUEST",
+            "NON_DELIVERY",
+            "SERVICE_FAILURE",
+            "PROMOTIONAL_DISCOUNT",
+            "PAYMENT_FAILURE",
+            "SETTLEMENT",
+            "OTHER"
+          ]
+        },
+        "explanation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence_references": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "requested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": ["object", "null"]
+    }
+  },
+  "additionalProperties": false
+}

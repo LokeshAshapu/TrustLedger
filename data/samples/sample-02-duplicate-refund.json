@@ -1,0 +1,22 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_dup_002",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_02",
+  "merchant_id": "merch_001",
+  "customer_id": "cust_00120",
+  "transaction_id": "txn_001200",
+  "order_id": "ord_001200",
+  "amount": {
+    "amount_minor": 149900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "DUPLICATE_PAYMENT",
+    "explanation": "Customer requested second refund attempt."
+  },
+  "evidence_references": [
+    "ev_000201"
+  ],
+  "requested_at": "2026-08-29T19:05:00Z"
+}

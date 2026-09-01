@@ -1,0 +1,18 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_invalid_5005",
+  "action_type": "REFUND",
+  "agent_id": "agent_malformed",
+  "merchant_id": "merch_demo",
+  "customer_id": "cust_123",
+  "amount": {
+    "amount_minor": -1500,
+    "currency": "inr"
+  },
+  "reason": {
+    "category": "OTHER",
+    "explanation": "Malformed refund payload for testing validation failures."
+  },
+  "evidence_references": [],
+  "requested_at": "invalid-timestamp-string"
+}

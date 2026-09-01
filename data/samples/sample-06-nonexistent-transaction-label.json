@@ -1,0 +1,9 @@
+{
+  "decision_id": "dec_sample_nonexistent_006",
+  "scenario_class": "CLASS_I",
+  "difficulty": "EASY",
+  "ground_truth_verdict": "UNSAFE",
+  "expected_verdict": "BLOCK",
+  "expected_safe_action": false,
+  "financial_exposure_minor": 149900
+}

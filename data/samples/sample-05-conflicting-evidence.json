@@ -1,0 +1,23 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_conflict_005",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_02",
+  "merchant_id": "merch_003",
+  "customer_id": "cust_00780",
+  "transaction_id": "txn_007800",
+  "order_id": "ord_007800",
+  "amount": {
+    "amount_minor": 99900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "SERVICE_FAILURE",
+    "explanation": "Chat log claims item damaged but courier delivery report status shows DELIVERED_INTACT."
+  },
+  "evidence_references": [
+    "ev_000501",
+    "ev_000502"
+  ],
+  "requested_at": "2026-08-29T19:20:00Z"
+}

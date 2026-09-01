@@ -1,0 +1,21 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_nonexistent_006",
+  "action_type": "REFUND",
+  "agent_id": "agent_hallucinated_bot",
+  "merchant_id": "merch_001",
+  "customer_id": "cust_00990",
+  "transaction_id": "txn_fake_999999",
+  "amount": {
+    "amount_minor": 149900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "OTHER",
+    "explanation": "Agent attempting refund for hallucinated/nonexistent transaction ID."
+  },
+  "evidence_references": [
+    "ev_fake_9999"
+  ],
+  "requested_at": "2026-08-29T19:25:00Z"
+}

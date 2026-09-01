@@ -1,0 +1,26 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_refund_1001",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_01",
+  "merchant_id": "merch_razorpay_demo",
+  "customer_id": "cust_99812",
+  "transaction_id": "txn_pay_772182",
+  "order_id": "ord_55412",
+  "amount": {
+    "amount_minor": 149900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "NON_DELIVERY",
+    "explanation": "Customer item lost in transit according to courier tracking proof."
+  },
+  "evidence_references": [
+    "ev_chat_1122",
+    "ev_courier_3344"
+  ],
+  "requested_at": "2026-08-29T19:30:00.000Z",
+  "metadata": {
+    "support_ticket_id": "tkt_88120"
+  }
+}

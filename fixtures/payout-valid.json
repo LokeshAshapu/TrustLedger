@@ -1,0 +1,22 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_payout_4004",
+  "action_type": "PAYOUT",
+  "agent_id": "agent_settlement_bot_04",
+  "merchant_id": "merch_vendor_998",
+  "amount": {
+    "amount_minor": 12500000,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "SETTLEMENT",
+    "explanation": "Weekly scheduled vendor payout disbursement following ledger reconciliation."
+  },
+  "evidence_references": [
+    "ev_reconciliation_report_88"
+  ],
+  "requested_at": "2026-08-29T19:33:00.000Z",
+  "metadata": {
+    "settlement_period": "2026-W34"
+  }
+}

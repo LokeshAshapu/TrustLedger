@@ -1,0 +1,25 @@
+{
+  "name": "trustledger",
+  "version": "0.1.0",
+  "description": "TrustLedger — The Financial AI Firewall",
+  "main": "dist/schemas/typescript/contracts.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node --test dist/tests/contracts.test.js",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "fintech",
+    "ai-firewall",
+    "security",
+    "razorpay"
+  ],
+  "author": "TrustLedger Engineering Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

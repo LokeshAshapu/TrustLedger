@@ -1,0 +1,22 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_duplicate_6006",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_01",
+  "merchant_id": "merch_razorpay_demo",
+  "customer_id": "cust_99812",
+  "transaction_id": "txn_pay_772182",
+  "amount": {
+    "amount_minor": 50000,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "DUPLICATE_PAYMENT",
+    "explanation": "Duplicate charge refund attempt."
+  },
+  "evidence_references": [
+    "ev_chat_1122",
+    "ev_chat_1122"
+  ],
+  "requested_at": "2026-08-29T19:34:00.000Z"
+}

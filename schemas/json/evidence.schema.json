@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://trustledger.io/schemas/v1/evidence.schema.json",
+  "title": "Evidence",
+  "description": "Canonical Evidence artifact contract with provenance metadata.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "evidence_id",
+    "evidence_type",
+    "source",
+    "source_record_id",
+    "timestamp",
+    "verification_status"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "trustledger.contract.v1"
+    },
+    "evidence_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_type": {
+      "type": "string",
+      "enum": [
+        "TRANSACTION",
+        "ORDER",
+        "PAYMENT_ATTEMPT",
+        "REFUND_HISTORY",
+        "CUSTOMER_HISTORY",
+        "POLICY",
+        "INVOICE",
+        "PAYOUT",
+        "DELIVERY",
+        "OTHER"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_record_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "content_hash": {
+      "type": ["string", "null"]
+    },
+    "verification_status": {
+      "type": "string",
+      "enum": ["UNVERIFIED", "VERIFIED", "FAILED", "CONFLICTING", "MISSING"]
+    },
+    "metadata": {
+      "type": ["object", "null"]
+    }
+  },
+  "additionalProperties": false
+}

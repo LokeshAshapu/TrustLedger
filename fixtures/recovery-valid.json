@@ -1,0 +1,24 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_recovery_3003",
+  "action_type": "PAYMENT_RECOVERY",
+  "agent_id": "agent_dunning_bot_03",
+  "merchant_id": "merch_razorpay_demo",
+  "customer_id": "cust_88120",
+  "transaction_id": "txn_failed_4410",
+  "amount": {
+    "amount_minor": 499900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "PAYMENT_FAILURE",
+    "explanation": "Scheduled retry attempt following bank network recovery."
+  },
+  "evidence_references": [
+    "ev_bank_dunning_log_12"
+  ],
+  "requested_at": "2026-08-29T19:32:00.000Z",
+  "metadata": {
+    "retry_attempt": 2
+  }
+}

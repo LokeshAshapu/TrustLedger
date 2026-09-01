@@ -1,0 +1,42 @@
+# TrustLedger Synthetic Financial World Generator Configuration
+seed: 20260829
+
+dataset:
+  target_decisions: 10000
+  merchants_count: 25
+  customers_count: 5000
+  time_window_days: 180
+  base_currency: "INR"
+
+scenario_distribution:
+  SAFE: 0.35
+  UNSAFE: 0.45
+  REVIEW_REQUIRED: 0.20
+
+class_sub_distribution:
+  CLASS_A: 0.35  # Legitimate / Safe
+  CLASS_B: 0.08  # Amount Mismatch
+  CLASS_C: 0.08  # Duplicate Action
+  CLASS_D: 0.08  # Policy Violation
+  CLASS_E: 0.07  # Wrong Entity
+  CLASS_F: 0.10  # Missing Evidence
+  CLASS_G: 0.07  # Conflicting Evidence
+  CLASS_H: 0.05  # Stale Evidence
+  CLASS_I: 0.07  # Nonexistent Record
+  CLASS_J: 0.05  # Contradictory Context
+
+difficulty_distribution:
+  EASY: 0.40
+  MEDIUM: 0.40
+  HARD: 0.20
+
+splits:
+  train: 0.70
+  validation: 0.15
+  test: 0.15
+
+output_paths:
+  processed_dir: "data/processed"
+  ground_truth_dir: "data/ground-truth"
+  splits_dir: "data/splits"
+  manifest_path: "data/manifest.json"

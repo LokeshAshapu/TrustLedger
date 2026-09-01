@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://trustledger.io/schemas/v1/execution-result.schema.json",
+  "title": "ExecutionResult",
+  "description": "Canonical Execution Result contract recorded post financial execution simulation.",
+  "type": "object",
+  "required": [
+    "contract_version",
+    "execution_id",
+    "decision_id",
+    "status",
+    "provider",
+    "amount",
+    "executed_at",
+    "idempotency_key"
+  ],
+  "properties": {
+    "contract_version": {
+      "type": "string",
+      "const": "trustledger.contract.v1"
+    },
+    "execution_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decision_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["NOT_STARTED", "QUEUED", "EXECUTING", "SUCCEEDED", "FAILED", "CANCELLED"]
+    },
+    "provider": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provider_reference": {
+      "type": ["string", "null"]
+    },
+    "amount": {
+      "type": "object",
+      "required": ["amount_minor", "currency"],
+      "properties": {
+        "amount_minor": { "type": "integer", "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+      }
+    },
+    "executed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "error_code": {
+      "type": ["string", "null"]
+    },
+    "error_message": {
+      "type": ["string", "null"]
+    },
+    "idempotency_key": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "additionalProperties": false
+}

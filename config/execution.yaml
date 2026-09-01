@@ -1,0 +1,23 @@
+# TrustLedger Financial Execution Simulator Configuration
+# Version: trustledger.execution-simulator.v1
+
+version: "trustledger.execution-simulator.v1"
+
+# Authorization Token Settings
+authorization_ttl_seconds: 300  # Token expires in 5 minutes (300 seconds)
+
+# Security Controls
+idempotency_enabled: true
+strict_hash_validation: true
+prevent_replay: true
+prevent_tampering: true
+
+# Supported Synthetic Financial Action Types
+supported_action_types:
+  - REFUND
+  - DISCOUNT
+  - PAYMENT_RECOVERY
+  - PAYOUT
+
+# Simulator Mode
+simulator_mode: "synthetic"  # Strict synthetic sandbox execution only

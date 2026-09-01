@@ -1,0 +1,22 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_policy_003",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_01",
+  "merchant_id": "merch_002",
+  "customer_id": "cust_00340",
+  "transaction_id": "txn_003400",
+  "order_id": "ord_003400",
+  "amount": {
+    "amount_minor": 6000000,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "SERVICE_FAILURE",
+    "explanation": "Agent attempting auto-refund of ₹60,000 exceeding merchant auto-refund limit of ₹25,000."
+  },
+  "evidence_references": [
+    "ev_000301"
+  ],
+  "requested_at": "2026-08-29T19:10:00Z"
+}

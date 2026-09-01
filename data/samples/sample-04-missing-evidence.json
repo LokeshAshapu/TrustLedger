@@ -1,0 +1,22 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_sample_missing_004",
+  "action_type": "REFUND",
+  "agent_id": "agent_support_bot_03",
+  "merchant_id": "merch_001",
+  "customer_id": "cust_00550",
+  "transaction_id": "txn_005500",
+  "order_id": "ord_005500",
+  "amount": {
+    "amount_minor": 249900,
+    "currency": "INR"
+  },
+  "reason": {
+    "category": "NON_DELIVERY",
+    "explanation": "Customer claims non-delivery but courier proof artifact is unverified/missing."
+  },
+  "evidence_references": [
+    "ev_missing_9999"
+  ],
+  "requested_at": "2026-08-29T19:15:00Z"
+}

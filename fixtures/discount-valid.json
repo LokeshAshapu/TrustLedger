@@ -1,0 +1,29 @@
+{
+  "contract_version": "trustledger.contract.v1",
+  "decision_id": "dec_discount_2002",
+  "action_type": "DISCOUNT",
+  "agent_id": "agent_retention_bot_02",
+  "merchant_id": "merch_razorpay_demo",
+  "customer_id": "cust_44310",
+  "order_id": "ord_99812",
+  "amount": {
+    "amount_minor": 25000,
+    "currency": "INR"
+  },
+  "discount_spec": {
+    "type": "PERCENTAGE",
+    "percentage_points": 10.0
+  },
+  "reason": {
+    "category": "PROMOTIONAL_DISCOUNT",
+    "explanation": "Loyalty retention discount applied for customer service delay."
+  },
+  "evidence_references": [
+    "ev_customer_loyalty_77",
+    "ev_chat_9921"
+  ],
+  "requested_at": "2026-08-29T19:31:00.000Z",
+  "metadata": {
+    "campaign_code": "RETENTION_10"
+  }
+}

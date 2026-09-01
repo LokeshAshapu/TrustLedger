@@ -1,0 +1,9 @@
+{
+  "decision_id": "dec_sample_conflict_005",
+  "scenario_class": "CLASS_G",
+  "difficulty": "HARD",
+  "ground_truth_verdict": "REVIEW_REQUIRED",
+  "expected_verdict": "REVIEW",
+  "expected_safe_action": false,
+  "financial_exposure_minor": 99900
+}

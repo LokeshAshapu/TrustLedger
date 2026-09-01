@@ -1,0 +1,37 @@
+# TrustLedger Financial Risk Engine Configuration
+# Version: trustledger.risk.v1
+
+version: "trustledger.risk.v1"
+
+# Financial Exposure Thresholds (Amount in Minor Units / Paise for INR)
+exposure_bands:
+  low_max_minor: 1000000       # Up to INR 10,000 (0.10 weight)
+  medium_max_minor: 5000000    # INR 10,000 to INR 50,000 (0.25 weight)
+  high_max_minor: 20000000     # INR 50,000 to INR 200,000 (0.45 weight)
+  critical_min_minor: 20000001 # Greater than INR 200,000 (0.70 weight)
+
+# Action Type Base Severity Weights
+action_weights:
+  PAYOUT: 1.0
+  REFUND: 0.8
+  PAYMENT_RECOVERY: 0.6
+  DISCOUNT: 0.4
+
+# Action Irreversibility Factors
+action_irreversibility:
+  PAYOUT: 0.90
+  REFUND: 0.50
+  PAYMENT_RECOVERY: 0.30
+  DISCOUNT: 0.20
+
+# Finding Severity Weights
+finding_weights:
+  HARD: 0.30
+  WARNING: 0.10
+  INFO: 0.00
+
+# Score Normalization & Risk Level Thresholds
+risk_level_thresholds:
+  low_upper: 0.25
+  medium_upper: 0.50
+  high_upper: 0.75
