@@ -256,6 +256,31 @@ def verify_razorpay_test_payment(req: VerifyPaymentRequest):
     }
 
 
+@app.get("/api/v1/razorpay/test/payments")
+def list_razorpay_test_payments():
+    """
+    GET /api/v1/razorpay/test/payments
+    Returns all registered/captured Razorpay Test Mode payments for web app display.
+    """
+    records = []
+    for pid, tx in repository.transactions_db.items():
+        if pid.startswith("pay_") or tx.get("source") in ["RAZORPAY_TEST_MODE", "VERIFIED_TEST_PAYMENT"]:
+            amt_minor = tx.get("amount", {}).get("amount_minor", 0) if isinstance(tx.get("amount"), dict) else 0
+            records.append({
+                "payment_id": pid,
+                "order_id": tx.get("order_id", "ord_rzp"),
+                "amount_rupees": round(amt_minor / 100.0, 2),
+                "amount_minor": amt_minor,
+                "currency": tx.get("amount", {}).get("currency", "INR") if isinstance(tx.get("amount"), dict) else "INR",
+                "status": tx.get("status", "CAPTURED"),
+                "method": tx.get("payment_method", "CARD"),
+                "customer_id": tx.get("customer_id", "cust_001"),
+                "merchant_id": tx.get("merchant_id", "merch_001"),
+                "created_at": tx.get("created_at", "2026-08-30T10:00:00Z"),
+            })
+    return {"count": len(records), "payments": records}
+
+
 @app.get("/api/v1/payments/{payment_id}")
 def get_razorpay_payment(payment_id: str):
     """

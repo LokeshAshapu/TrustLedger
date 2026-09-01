@@ -500,6 +500,21 @@ export class TrustLedgerAPI {
   }
 
   /**
+   * Fetches captured Razorpay Test Mode payments from backend API.
+   */
+  public static async fetchTestPayments(): Promise<any[]> {
+    const baseUrl = this.getApiBaseUrl();
+    try {
+      const res = await fetch(`${baseUrl}/api/v1/razorpay/test/payments`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.payments || [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * Retrieves bounded simulation scenarios.
    */
   public static getSimulationScenarios(): SimulationScenarioItem[] {

@@ -38,7 +38,19 @@ export const TestPaymentPage: React.FC = () => {
   const [decisionResult, setDecisionResult] = useState<BackendDecisionResponse | null>(null);
   const [executionResult, setExecutionResult] = useState<ExecutionResponse | null>(null);
 
-  // Load Razorpay Checkout Script
+  // Test Payments History List
+  const [testPaymentsList, setTestPaymentsList] = useState<any[]>([]);
+
+  const loadTestPayments = async () => {
+    try {
+      const list = await TrustLedgerAPI.fetchTestPayments();
+      setTestPaymentsList(list);
+    } catch {
+      // Graceful fallback
+    }
+  };
+
+  // Load Razorpay Checkout Script & Fetch Recorded Test Payments
   useEffect(() => {
     if (!document.getElementById("razorpay-checkout-script")) {
       const script = document.createElement("script");
@@ -47,6 +59,7 @@ export const TestPaymentPage: React.FC = () => {
       script.async = true;
       document.body.appendChild(script);
     }
+    loadTestPayments();
   }, []);
 
   // Handler: Create Order & Open Razorpay Checkout
@@ -113,6 +126,7 @@ export const TestPaymentPage: React.FC = () => {
       setVerifiedPayment(ver);
       setRefundAmount(Math.min(500, amount));
       setStage("VERIFY");
+      await loadTestPayments();
     } catch (err: any) {
       setError(err.message || "Payment signature verification failed.");
     } finally {
@@ -135,6 +149,23 @@ export const TestPaymentPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Select Recorded Payment from Table
+  const handleSelectRecordedPayment = (rec: any) => {
+    setVerifiedPayment({
+      verified: true,
+      payment_id: rec.payment_id,
+      order_id: rec.order_id,
+      amount_rupees: rec.amount_rupees,
+      amount_minor: rec.amount_minor,
+      currency: rec.currency || "INR",
+      status: rec.status || "CAPTURED",
+      method: rec.method || "CARD",
+      source: "RECORDED_TEST_PAYMENT",
+    });
+    setRefundAmount(Math.min(500, rec.amount_rupees));
+    setStage("VERIFY");
   };
 
   // Handler: Verify Refund Request through TrustLedger Decision Gate
@@ -199,6 +230,7 @@ export const TestPaymentPage: React.FC = () => {
       );
       setExecutionResult(result);
       setStage("EXECUTION");
+      await loadTestPayments();
     } catch (err: any) {
       setError(err.message || "Refund execution failed.");
     } finally {
@@ -215,6 +247,7 @@ export const TestPaymentPage: React.FC = () => {
     setExecutionResult(null);
     setError(null);
     setRefundAmount(500);
+    loadTestPayments();
   };
 
   const verdict = decisionResult?.decision_result?.verdict || "REVIEW";
@@ -245,9 +278,9 @@ export const TestPaymentPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 w-full flex-1 flex flex-col">
+      <div className="max-w-4xl mx-auto px-4 py-8 w-full flex-1 flex flex-col space-y-8">
         {/* Header */}
-        <div className="mb-8">
+        <div>
           <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest mb-1">TRUSTLEDGER</div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">TEST PAYMENT LAB</h1>
           <p className="text-sm text-zinc-400">
@@ -256,7 +289,7 @@ export const TestPaymentPage: React.FC = () => {
         </div>
 
         {/* Progress Stepper */}
-        <div className="mb-10 bg-[#101010] border border-white/10 rounded-lg p-4 flex items-center justify-between text-xs font-mono">
+        <div className="bg-[#101010] border border-white/10 rounded-lg p-4 flex items-center justify-between text-xs font-mono">
           <div className={`flex items-center gap-2 ${stage === "PAYMENT" ? "text-emerald-400 font-bold" : verifiedPayment ? "text-zinc-300" : "text-zinc-500"}`}>
             <span>{verifiedPayment ? "✓" : "●"}</span>
             <span>01 PAYMENT</span>
@@ -283,7 +316,7 @@ export const TestPaymentPage: React.FC = () => {
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 bg-red-950/40 border border-red-500/30 rounded-lg text-red-400 text-sm font-mono flex items-center justify-between">
+          <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-lg text-red-400 text-sm font-mono flex items-center justify-between">
             <div>
               <span className="font-bold mr-2">[ERROR]:</span>
               {error}
@@ -726,6 +759,70 @@ export const TestPaymentPage: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* ============================================================ */}
+        {/* CAPTURED TEST PAYMENTS IN WEB APP */}
+        {/* ============================================================ */}
+        <div className="bg-[#101010] border border-white/10 rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5 font-mono">
+            <div className="flex items-center gap-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                CAPTURED TEST PAYMENTS IN WEB APP ({testPaymentsList.length})
+              </h3>
+            </div>
+            <button
+              onClick={loadTestPayments}
+              className="text-xs text-zinc-400 hover:text-emerald-400 transition"
+            >
+              ↻ Refresh List
+            </button>
+          </div>
+
+          {testPaymentsList.length === 0 ? (
+            <div className="p-6 text-center text-xs font-mono text-zinc-500">
+              No test payments captured yet. Create a payment above to see it appear here.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-white/10 text-zinc-500 uppercase tracking-wider">
+                    <th className="py-2.5 px-3">Payment ID</th>
+                    <th className="py-2.5 px-3">Order ID</th>
+                    <th className="py-2.5 px-3">Amount</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3">Customer</th>
+                    <th className="py-2.5 px-3 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {testPaymentsList.map((rec, idx) => (
+                    <tr key={rec.payment_id || idx} className="hover:bg-white/5 transition">
+                      <td className="py-3 px-3 font-bold text-emerald-400">{rec.payment_id}</td>
+                      <td className="py-3 px-3 text-zinc-400">{rec.order_id}</td>
+                      <td className="py-3 px-3 font-bold text-white">₹{rec.amount_rupees?.toLocaleString()}</td>
+                      <td className="py-3 px-3">
+                        <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-[10px] font-semibold">
+                          {rec.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-zinc-400">{rec.customer_id}</td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={() => handleSelectRecordedPayment(rec)}
+                          className="px-3 py-1 bg-white/10 hover:bg-emerald-500 hover:text-black text-white text-[11px] font-bold rounded transition"
+                        >
+                          Verify Refund →
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
