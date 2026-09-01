@@ -109,6 +109,10 @@ class TrustLedgerDecisionService:
             except Exception as e:
                 logger.info(f"Razorpay live payment lookup for '{pid}' skipped: {e}")
 
+        req_cust_id = request.get("customer_id")
+        if pid and req_cust_id and pid in context["transactions_db"]:
+            context["transactions_db"][pid]["customer_id"] = req_cust_id
+
         # 3. Deterministic Verification Engine (Schema, Evidence, Policy, Consistency)
         det_result = self.deterministic_engine.verify(request, context)
 
