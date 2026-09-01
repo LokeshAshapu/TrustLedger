@@ -100,8 +100,20 @@ class ConsistencyEngine:
         # ---------------------------------------------------------------------
         if txn:
             # Customer Mismatch
-            if cust_id and txn.get("customer_id") != cust_id:
-                txn["customer_id"] = cust_id
+            if cust_id and txn.get("customer_id") and txn.get("customer_id") != cust_id:
+                findings.append(
+                    Finding(
+                        check_id="CONSISTENCY_CUSTOMER_MISMATCH",
+                        category=FindingCategory.CONSISTENCY,
+                        severity=FindingSeverity.HARD,
+                        status=CheckStatus.FAIL,
+                        code="CUSTOMER_MISMATCH",
+                        message=f"Requested customer_id '{cust_id}' does not match actual transaction owner customer_id '{txn.get('customer_id')}'.",
+                        evidence_ids=request.get("evidence_references", []),
+                        details={"requested_customer_id": cust_id, "actual_customer_id": txn.get("customer_id")},
+                    )
+                )
+                overall_status = CheckStatus.FAIL
 
             # Merchant Mismatch
             if merch_id and txn.get("merchant_id") != merch_id:
