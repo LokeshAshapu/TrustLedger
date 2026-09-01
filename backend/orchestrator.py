@@ -113,6 +113,21 @@ class TrustLedgerDecisionService:
         if pid and req_cust_id and pid in context["transactions_db"]:
             context["transactions_db"][pid]["customer_id"] = req_cust_id
 
+        # Ensure default policy cap is present for merchant if not in policy_snapshots_db
+        merch_id = request.get("merchant_id", "merch_001")
+        if merch_id and merch_id not in context["policy_snapshots_db"]:
+            context["policy_snapshots_db"][merch_id] = {
+                "merchant_id": merch_id,
+                "rules": [
+                    {
+                        "rule_id": "rule_auto_refund_cap",
+                        "rule_name": "Maximum Automated Refund Cap",
+                        "threshold_value": 2500000,
+                        "enforcement": "HARD",
+                    }
+                ],
+            }
+
         # Auto-provision evidence references if missing and not explicitly simulated non-existent
         refs = request.get("evidence_references", [])
         for ref_id in refs:
@@ -125,7 +140,7 @@ class TrustLedgerDecisionService:
                     "source_record_id": pid or "txn_100",
                     "transaction_id": pid or "txn_100",
                     "customer_id": req_cust_id or "cust_001",
-                    "merchant_id": request.get("merchant_id", "merch_001"),
+                    "merchant_id": merch_id,
                     "status": "VERIFIED",
                     "verification_status": "VERIFIED",
                     "timestamp": "2026-07-01T10:00:00Z" if is_stale else "2026-08-30T10:00:00Z",
