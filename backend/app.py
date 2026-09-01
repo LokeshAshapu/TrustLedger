@@ -322,9 +322,30 @@ def execute_refund(decision_id: str, req: ExecuteRefundApiRequest):
         )
 
 
-# --- Static Frontend Production Serving (Docker / Single-Server Deployment) ---
+# --- Static Frontend Production Serving & SPA Catch-All Routing ---
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 frontend_dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+
 if os.path.exists(frontend_dist_path):
-    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static_frontend")
+    index_html_path = os.path.join(frontend_dist_path, "index.html")
+
+    # Serve static assets under /assets
+    assets_path = os.path.join(frontend_dist_path, "assets")
+    if os.path.exists(assets_path):
+        app.mount("/assets", StaticFiles(directory=assets_path), name="static_assets")
+
+    @app.get("/{full_path:path}")
+    def serve_spa(full_path: str):
+        # Allow API routes to be handled by FastAPI
+        if full_path.startswith("api/") or full_path.startswith("health"):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="API endpoint not found")
+
+        # Check if specific static file exists in dist (e.g. favicon.svg)
+        target_file = os.path.join(frontend_dist_path, full_path)
+        if full_path and os.path.isfile(target_file):
+            return FileResponse(target_file)
+
+        # Return SPA index.html for all client-side React routes
+        return FileResponse(index_html_path)

@@ -110,7 +110,17 @@ export class TrustLedgerAPI {
    * Retrieves configured API base URL (VITE_TRUSTLEDGER_API_URL or http://localhost:8000).
    */
   public static getApiBaseUrl(): string {
-    return (import.meta.env.VITE_TRUSTLEDGER_API_URL as string) || "http://localhost:8000";
+    const envUrl = import.meta.env.VITE_TRUSTLEDGER_API_URL as string;
+    if (envUrl && envUrl.trim()) {
+      return envUrl.trim().replace(/\/+$/, "");
+    }
+    if (typeof window !== "undefined" && window.location) {
+      const hostname = window.location.hostname;
+      if (hostname !== "localhost" && hostname !== "127.0.0.1") {
+        return window.location.origin;
+      }
+    }
+    return "http://localhost:8000";
   }
 
   /**
