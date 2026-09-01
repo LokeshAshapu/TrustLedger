@@ -133,7 +133,7 @@ class TestRazorpayCheckoutIntegration(unittest.TestCase):
         )
         self.assertEqual(exec_res.status_code, 200)
         edata = exec_res.json()
-        self.assertTrue(edata["success"])
+        self.assertEqual(edata["status"], "EXECUTED")
 
     def test_06_policy_cap_block_cannot_execute(self):
         payment_id = "pay_block_cap_001"

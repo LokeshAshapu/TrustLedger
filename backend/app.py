@@ -208,10 +208,13 @@ def verify_razorpay_test_payment(req: VerifyPaymentRequest):
     repository.evidence_db["ev_001"] = {
         "evidence_id": "ev_001",
         "evidence_type": "RETURN_LABEL",
+        "source": "BlueDart",
+        "source_record_id": pid,
         "transaction_id": pid,
         "customer_id": "cust_001",
         "merchant_id": "merch_001",
         "status": "VERIFIED",
+        "verification_status": "VERIFIED",
         "timestamp": "2026-08-30T10:00:00Z",
     }
 
