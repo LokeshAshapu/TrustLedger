@@ -157,7 +157,7 @@ export const TestPaymentPage: React.FC = () => {
       decision_id: `demo-${Date.now().toString(36)}`,
       action_type: "REFUND",
       amount: { amount_minor: Math.round(refundAmount * 100), currency: "INR" },
-      customer_id: "cust_100",
+      customer_id: "cust_001",
       merchant_id: "merch_001",
       transaction_id: verifiedPayment.payment_id,
       payment_id: verifiedPayment.payment_id,

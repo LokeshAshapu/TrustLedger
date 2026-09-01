@@ -21,7 +21,7 @@ import {
 export const LiveVerificationRunner: React.FC = () => {
   // Form State Inputs
   const [amountRupees, setAmountRupees] = useState<number | string>(1500);
-  const [customerId, setCustomerId] = useState<string>("cust_100");
+  const [customerId, setCustomerId] = useState<string>("cust_001");
   const [transactionId, setTransactionId] = useState<string>("txn_100");
   const [paymentId, setPaymentId] = useState<string>("pay_100");
   const [reason, setReason] = useState<string>("Customer requested refund for verified item issue.");
@@ -59,7 +59,7 @@ export const LiveVerificationRunner: React.FC = () => {
 
     if (preset === "SAFE") {
       setAmountRupees(1500);
-      setCustomerId("cust_100");
+      setCustomerId("cust_001");
       setTransactionId("txn_100");
       setPaymentId("pay_100");
       setReason("Customer requested refund for verified item issue.");
@@ -67,7 +67,7 @@ export const LiveVerificationRunner: React.FC = () => {
       setEvidenceRef("ev_001");
     } else if (preset === "REVIEW") {
       setAmountRupees(500);
-      setCustomerId("cust_100");
+      setCustomerId("cust_001");
       setTransactionId("txn_100");
       setPaymentId("pay_100");
       setReason("Stale support ticket refund request.");
@@ -75,7 +75,7 @@ export const LiveVerificationRunner: React.FC = () => {
       setEvidenceRef("ev_stale_999");
     } else if (preset === "BLOCK") {
       setAmountRupees(60000);
-      setCustomerId("cust_100");
+      setCustomerId("cust_001");
       setTransactionId("txn_100");
       setPaymentId("pay_100");
       setReason("Customer requested refund exceeding policy cap.");
