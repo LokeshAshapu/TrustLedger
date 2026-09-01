@@ -212,7 +212,7 @@ def verify_razorpay_test_payment(req: VerifyPaymentRequest):
         "status": pay_status,
         "payment_method": payment_method,
         "refunded_amount": {"amount_minor": 0, "currency": req.currency or "INR"},
-        "customer_id": "cust_100",
+        "customer_id": "cust_001",
         "merchant_id": "merch_001",
         "created_at": "2026-08-30T10:00:00Z",
     }
