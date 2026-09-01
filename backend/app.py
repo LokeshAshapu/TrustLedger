@@ -205,6 +205,29 @@ def verify_razorpay_test_payment(req: VerifyPaymentRequest):
         pay_status = "CAPTURED"
         source = "VERIFIED_TEST_PAYMENT"
 
+    repository.evidence_db["ev_001"] = {
+        "evidence_id": "ev_001",
+        "evidence_type": "RETURN_LABEL",
+        "transaction_id": pid,
+        "customer_id": "cust_001",
+        "merchant_id": "merch_001",
+        "status": "VERIFIED",
+        "timestamp": "2026-08-30T10:00:00Z",
+    }
+
+    repository.customers_db["cust_001"] = {
+        "customer_id": "cust_001",
+        "merchant_id": "merch_001",
+        "account_age_days": 180,
+        "customer_segment": "REGULAR",
+        "total_orders": 5,
+        "successful_payments": 5,
+        "failed_payments": 0,
+        "total_spend_minor": 500000,
+        "refund_count": 0,
+        "refund_amount_minor": 0,
+    }
+
     repository.transactions_db[pid] = {
         "transaction_id": pid,
         "order_id": req.razorpay_order_id,
