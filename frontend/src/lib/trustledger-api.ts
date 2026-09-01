@@ -105,6 +105,62 @@ export interface RazorpayHealthResponse {
   details?: any;
 }
 
+export interface RazorpayOrderResponse {
+  order_id: string;
+  amount_minor: number;
+  amount_rupees: number;
+  currency: string;
+  key_id: string;
+  environment: string;
+  source: string;
+}
+
+export interface RazorpayVerificationResponse {
+  verified: boolean;
+  payment_id: string;
+  order_id: string;
+  amount_rupees: number;
+  amount_minor: number;
+  currency: string;
+  status: string;
+  method: string;
+  source: string;
+}
+
+export type DecisionVerificationResponse = {
+  decision_id: string;
+  verdict: "APPROVE" | "REVIEW" | "BLOCK";
+  diagnostic_code?: string;
+  decision_rule?: string;
+  reasoning?: string;
+  decision_reasons?: string[];
+  execution_authorization?: {
+    authorization_id: string;
+    decision_id: string;
+    status: string;
+    expires_at: string;
+  } | null;
+  ai_result?: {
+    ai_recommendation?: string;
+    confidence?: number;
+    explanation?: string;
+  };
+  decision_result?: any;
+  authorization?: any;
+};
+
+export type ExecutionResponse = {
+  success: boolean;
+  status: string;
+  execution_id: string;
+  provider_result?: {
+    refund_id?: string;
+    status?: string;
+    provider?: string;
+    environment?: string;
+  };
+};
+
 export class TrustLedgerAPI {
   /**
    * Retrieves configured API base URL (VITE_TRUSTLEDGER_API_URL or http://localhost:8000).
@@ -166,6 +222,60 @@ export class TrustLedgerAPI {
   }
 
   /**
+   * Creates a Razorpay Test Mode Order via POST /api/v1/razorpay/test/orders.
+   */
+  public static async createRazorpayOrder(
+    amount: number,
+    customerName: string = "Demo Customer",
+    customerEmail: string = "demo@example.com"
+  ): Promise<RazorpayOrderResponse> {
+    const baseUrl = this.getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/api/v1/razorpay/test/orders`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount,
+        currency: "INR",
+        customer_name: customerName,
+        customer_email: customerEmail,
+      }),
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.detail?.message || errJson.detail || `Order creation failed with status ${res.status}`);
+    }
+    return await res.json();
+  }
+
+  /**
+   * Verifies Razorpay Payment Signature server-side via POST /api/v1/razorpay/test/payment/verify.
+   */
+  public static async verifyRazorpayPaymentSignature(
+    paymentId: string,
+    orderId: string,
+    signature: string,
+    amount: number
+  ): Promise<RazorpayVerificationResponse> {
+    const baseUrl = this.getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/api/v1/razorpay/test/payment/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        razorpay_payment_id: paymentId,
+        razorpay_order_id: orderId,
+        razorpay_signature: signature,
+        amount,
+        currency: "INR",
+      }),
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.detail?.message || errJson.detail || `Payment verification failed with status ${res.status}`);
+    }
+    return await res.json();
+  }
+
+  /**
    * Fetches payment metadata from GET /api/v1/payments/{payment_id}.
    */
   public static async fetchRazorpayPayment(paymentId: string): Promise<RazorpayPaymentMetadata> {
@@ -211,7 +321,8 @@ export class TrustLedgerAPI {
 
       if (!res.ok) {
         const errJson = await res.json().catch(() => ({}));
-        throw new Error(errJson.detail || `API request failed with status ${res.status}`);
+        const msg = typeof errJson.detail === "object" ? errJson.detail.message : errJson.detail;
+        throw new Error(msg || `API request failed with status ${res.status}`);
       }
 
       return await res.json();
@@ -219,6 +330,33 @@ export class TrustLedgerAPI {
       clearTimeout(timer);
       throw err;
     }
+  }
+
+  /**
+   * Executes an approved decision via POST /api/v1/decisions/{decision_id}/execute.
+   */
+  public static async executeDecision(
+    decisionId: string,
+    authorizationId: string,
+    paymentId: string,
+    idempotencyKey?: string
+  ): Promise<ExecutionResponse> {
+    const baseUrl = this.getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/api/v1/decisions/${encodeURIComponent(decisionId)}/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        authorization_id: authorizationId,
+        payment_id: paymentId,
+        idempotency_key: idempotencyKey || `idemp_${Date.now()}`,
+      }),
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      const msg = typeof errJson.detail === "object" ? errJson.detail.message : errJson.detail;
+      throw new Error(msg || `Execution failed with status ${res.status}`);
+    }
+    return await res.json();
   }
 
   /**

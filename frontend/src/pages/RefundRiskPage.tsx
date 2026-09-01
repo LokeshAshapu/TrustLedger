@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { LiveVerificationRunner } from "../components/trustledger/LiveVerificationRunner";
 import { RefundLossPreventionCard } from "../components/trustledger/RefundLossPreventionCard";
 import { RefundEvaluationPanel } from "../components/trustledger/RefundEvaluationPanel";
@@ -40,7 +41,29 @@ export const RefundRiskPage: React.FC = () => {
         </div>
       </section>
 
-      {/* 2. Main Verification Workspace */}
+      {/* 2. Test Payment Lab Banner */}
+      <section className="max-w-[1200px] mx-auto">
+        <div className="bg-gradient-to-r from-emerald-950/40 via-black to-blue-950/40 border border-emerald-500/30 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono">
+          <div>
+            <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs mb-1">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              BUILDATHON REAL E2E TEST LAB
+            </div>
+            <h2 className="text-lg font-bold text-white">Razorpay Test Mode Payment & Refund Gating</h2>
+            <p className="text-xs text-zinc-400 mt-1">
+              Create a simulated Razorpay payment and experience automatic payment capture & refund execution.
+            </p>
+          </div>
+          <Link
+            to="/test-payment"
+            className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs rounded-lg transition whitespace-nowrap"
+          >
+            TRY REAL TEST PAYMENT →
+          </Link>
+        </div>
+      </section>
+
+      {/* 3. Main Verification Workspace */}
       <section>
         <LiveVerificationRunner />
       </section>

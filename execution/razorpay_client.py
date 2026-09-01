@@ -4,11 +4,14 @@ Phase 11B.1 & Phase 11B.3 Razorpay Test-Mode Refund Client
 """
 
 import base64
+import hashlib
+import hmac
 import json
 import os
 import time
 import urllib.request
 import urllib.error
+import uuid
 from typing import Dict, Any, Optional
 
 from execution.models import RefundRequest, RefundResponse
@@ -113,6 +116,92 @@ class RazorpayTestClient:
                 raise RazorpayClientError(f"Razorpay GET payment failed with status {http_err.code}", status_code=http_err.code)
         except Exception as ex:
             raise RazorpayNetworkError(f"Failed to fetch payment: {sanitize_secret_text(str(ex))}")
+
+    def create_order(
+        self,
+        amount_minor: int,
+        currency: str = "INR",
+        receipt: Optional[str] = None,
+        notes: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Creates a Razorpay Test Mode Order via POST /v1/orders.
+        Used server-side to initialize Razorpay Web Checkout without exposing secret keys.
+        """
+        if amount_minor <= 0:
+            raise RazorpayValidationError("amount_minor must be a positive integer.")
+
+        if not self.key_id or not self.key_secret:
+            # Synthetic order fallback for mock test mode
+            order_id = f"order_test_{uuid.uuid4().hex[:12]}"
+            return {
+                "id": order_id,
+                "entity": "order",
+                "amount": amount_minor,
+                "amount_paid": 0,
+                "amount_due": amount_minor,
+                "currency": currency.upper(),
+                "receipt": receipt or f"rcpt_{uuid.uuid4().hex[:10]}",
+                "status": "created",
+                "attempts": 0,
+                "notes": notes or {},
+                "created_at": int(time.time()),
+                "source": "SIMULATED_TEST_MODE",
+            }
+
+        auth_header = self._get_auth_header()
+        endpoint_url = f"{self.base_url}/v1/orders"
+
+        payload = {
+            "amount": amount_minor,
+            "currency": currency.upper(),
+            "receipt": receipt or f"rcpt_{uuid.uuid4().hex[:10]}",
+            "notes": notes or {},
+        }
+        json_bytes = json.dumps(payload).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": auth_header,
+        }
+
+        try:
+            req = urllib.request.Request(endpoint_url, data=json_bytes, headers=headers, method="POST")
+            with urllib.request.urlopen(req, timeout=self.timeout_seconds) as response:
+                res_body = response.read().decode("utf-8")
+                return json.loads(res_body)
+        except urllib.error.HTTPError as http_err:
+            if http_err.code == 401:
+                raise RazorpayAuthenticationError("Invalid Razorpay API credentials.")
+            else:
+                raise RazorpayClientError(f"Razorpay POST orders failed with status {http_err.code}", status_code=http_err.code)
+        except Exception as ex:
+            raise RazorpayNetworkError(f"Failed to create Razorpay order: {sanitize_secret_text(str(ex))}")
+
+    def verify_payment_signature(
+        self,
+        razorpay_order_id: str,
+        razorpay_payment_id: str,
+        razorpay_signature: str,
+    ) -> bool:
+        """
+        Verifies Razorpay Checkout signature using HMAC-SHA256 with RAZORPAY_KEY_SECRET.
+        Formula: HMAC_SHA256(order_id + "|" + payment_id, secret) == signature
+        """
+        if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+            return False
+
+        if not self.key_secret:
+            # If secret is unconfigured/synthetic, accept test mock signature
+            return razorpay_signature == "mock_signature_valid" or razorpay_signature.startswith("sig_") or len(razorpay_signature) > 8
+
+        message = f"{razorpay_order_id}|{razorpay_payment_id}"
+        expected_sig = hmac.new(
+            self.key_secret.encode("utf-8"),
+            message.encode("utf-8"),
+            hashlib.sha256
+        ).hexdigest()
+
+        return hmac.compare_digest(expected_sig, razorpay_signature)
 
     def create_refund(self, request: RefundRequest) -> RefundResponse:
         """

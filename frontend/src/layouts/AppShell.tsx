@@ -12,7 +12,8 @@ export const AppShell: React.FC<AppShellProps> = ({ children }) => {
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const navItems: { label: string; route: string; alias?: string }[] = [
+    { label: "Test Payment Lab", route: "/test-payment" },
     { label: "Refund Risk", route: "/refund-risk", alias: "/" },
     { label: "Decisions", route: "/decisions" },
     { label: "Evidence", route: "/evidence" },
