@@ -320,3 +320,11 @@ def execute_refund(decision_id: str, req: ExecuteRefundApiRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"EXECUTION_FAILURE: {str(e)}",
         )
+
+
+# --- Static Frontend Production Serving (Docker / Single-Server Deployment) ---
+from fastapi.staticfiles import StaticFiles
+
+frontend_dist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+if os.path.exists(frontend_dist_path):
+    app.mount("/", StaticFiles(directory=frontend_dist_path, html=True), name="static_frontend")

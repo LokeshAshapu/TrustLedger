@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  trustledger-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: trustledger-control-plane
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - AI_PROVIDER=mock
+      - RAZORPAY_ENVIRONMENT=test
+    env_file:
+      - .env
+    restart: unless-stopped

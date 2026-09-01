@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: trustledger-app
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: AI_PROVIDER
+        value: mock
+      - key: RAZORPAY_ENVIRONMENT
+        value: test
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
