@@ -46,6 +46,63 @@ app.add_middleware(
 
 # Global Orchestration Service Singleton
 repository = SyntheticDataRepository()
+
+# Pre-populate default evidence and customer records
+default_evidences = {
+    "ev_001": {
+        "evidence_id": "ev_001",
+        "evidence_type": "RETURN_LABEL",
+        "source": "BlueDart",
+        "source_record_id": "txn_100",
+        "transaction_id": "txn_100",
+        "customer_id": "cust_001",
+        "merchant_id": "merch_001",
+        "status": "VERIFIED",
+        "verification_status": "VERIFIED",
+        "timestamp": "2026-08-30T10:00:00Z",
+    },
+    "ev_002": {
+        "evidence_id": "ev_002",
+        "evidence_type": "RETURN_LABEL",
+        "source": "Delhivery",
+        "source_record_id": "txn_100",
+        "transaction_id": "txn_100",
+        "customer_id": "cust_001",
+        "merchant_id": "merch_001",
+        "status": "VERIFIED",
+        "verification_status": "VERIFIED",
+        "timestamp": "2026-08-30T10:00:00Z",
+    },
+    "ev_stale_999": {
+        "evidence_id": "ev_stale_999",
+        "evidence_type": "SUPPORT_LOG",
+        "source": "Zendesk",
+        "source_record_id": "txn_100",
+        "transaction_id": "txn_100",
+        "customer_id": "cust_001",
+        "merchant_id": "merch_001",
+        "status": "VERIFIED",
+        "verification_status": "VERIFIED",
+        "timestamp": "2026-07-01T10:00:00Z",
+    },
+}
+for eid, ev in default_evidences.items():
+    repository.evidence_db[eid] = ev
+
+for cid in ["cust_001", "cust_100", "cust_demo"]:
+    repository.customers_db[cid] = {
+        "customer_id": cid,
+        "merchant_id": "merch_001",
+        "account_age_days": 180,
+        "customer_segment": "REGULAR",
+        "total_orders": 5,
+        "successful_payments": 5,
+        "failed_payments": 0,
+        "total_spend_minor": 500000,
+        "refund_count": 0,
+        "refund_amount_minor": 0,
+    }
+
 decision_service = TrustLedgerDecisionService(data_repository=repository)
 
 
